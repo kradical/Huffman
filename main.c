@@ -1,26 +1,25 @@
 #include <stdio.h>
 #include <string.h>
 
-// Alphabet and lookup tables
 #define SIZE 3
-#define MAXENCLENGTH 2
+#define TREESIZE 7 // (2 ** SIZE) - 1
+#define MAXENCODEDLENGTH 2
 
 char alphabet[SIZE] = { 'A', 'B', 'C' };
 
 char *lookupTable[SIZE] = { "0", "10", "11" };
-int encodoedLengths[SIZE] = { 1, 2, 2 };
 
-char lookupTree[7] = { -1, 'A', -1, -1, -1, 'B', 'C' };
+char lookupTree[TREESIZE] = { -1, 'A', -1, -1, -1, 'B', 'C' };
 
-// string to encode, buffer long enough to hold encoded string
 void encode(char*, char*);
-// string to decode, buffer long enough to hold encoded string
 void decode(char*, char*);
 
 int main(void) {
-    char *initial = "AAAAAABAAAAAA";
-    char encoded[strlen(initial) * MAXENCLENGTH + 1];
+    char *initial = "ABCCCBBAA";
+    char encoded[strlen(initial) * MAXENCODEDLENGTH + 1];
     char decoded[strlen(initial) + 1];
+
+    printf("original: %s\n\n", initial);
     
     encode(initial, encoded);
 
@@ -41,7 +40,7 @@ void encode(char *input, char *output) {
 
         strcpy(output, lookupTable[index]);
 
-        output += encodoedLengths[index];
+        output += strlen(lookupTable[index]);
         input += 1;
     }
 }
