@@ -4,11 +4,6 @@
 
 #define SIZE 16
 
-#define max(a, b) \
-   ({ __typeof__ (a) _a = (a); \
-       __typeof__ (b) _b = (b); \
-     _a > _b ? _a : _b; })
-
 char alphabet[SIZE] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P' };
 
 uint8_t codeLookup[SIZE] = { 
@@ -36,11 +31,11 @@ char characterLookup[255] = {
     'C','C','C','C','C','C','C','C','C','C','C','C','C','C','C','C','C','C','C','C','C','C','C','C','C','C','C','C','C','C','C','C','H','H','H','H','H','H','H','H','H','H','H','H','H','H','H','H','L','L','L','L','L','L','L','L','O','O','O','O','O','O','O','O','B','B','B','B','B','B','B','B','B','B','B','B','B','B','B','B','B','B','B','B','B','B','B','B','B','B','B','B','B','B','B','B','J','J','J','J','J','J','J','J','J','J','J','J','J','J','J','J','G','G','G','G','G','G','G','G','G','G','G','G','G','G','G','G','F','F','F','F','F','F','F','F','F','F','F','F','F','F','F','F','P','P','P','P','P','P','P','P','M','M','M','M','M','M','M','M','E','E','E','E','E','E','E','E','E','E','E','E','E','E','E','E','I','I','I','I','I','I','I','I','I','I','I','I','I','I','I','I','N','N','N','N','N','N','N','N','K','K','K','K','K','K','K','K','D','D','D','D','D','D','D','D','D','D','D','D','D','D','D','D','A','A','A','A','A','A','A','A','A','A','A','A','A','A','A','A','A','A','A','A','A','A','A','A','A','A','A','A','A','A','A',
 };
 
-int encode(char*, uint8_t*);
-void decode(uint8_t*, char*);
+void encode(char*, uint8_t*);
+void decode(uint8_t*, int, char*);
 
-// Utility to print result of encoding
-// Assumes little endian
+// Utility to print result of encoding.
+// Assumes little endian.
 void printBits(size_t size, void *ptr) {
     unsigned char *b = (unsigned char*) ptr;
     unsigned char byte;
@@ -55,9 +50,7 @@ void printBits(size_t size, void *ptr) {
 }
 
 int main(void) {
-    char *initial = "POAJIK";
-    // 10010 00111 111 0110 1011 11001
-
+    char *initial = "POAJBCDFEALIJKEEIK";
     int initialLength = strlen(initial);
     
     uint8_t encoded[initialLength]; // guarenteed to have enough room.
@@ -65,65 +58,72 @@ int main(void) {
     
     char decoded[initialLength + 1];
 
-    printf("original: %s\n\n", initial);
-    
-    int encodedLength = encode(initial, encoded);
+    printf("original:\n%s\n\n", initial);
 
-    printf("encoded (nearest byte): ");
-    for (int i = 0; i < encodedLength; i++) {
+    encode(initial, encoded);
+
+    printf("encoded (with padding):\n");
+    for (int i = 0; i < initialLength; i++) {
         printBits(sizeof(uint8_t), &encoded[i]);
     }
     printf("\n\n");
 
-    decode(encoded, decoded);
+    decode(encoded, initialLength, decoded);
 
-    printf("decoded: %s\n\n", decoded);
+    printf("decoded:\n%s\n\n", decoded);
 
     return 0;
 }
 
 // Assumes string contains characters in the range of alphabet
 // Assumes buffer holds enough room for output
-int encode(char *input, uint8_t *output) {
-    uint8_t encodeIndex = 0;
-    int outputLength = 1;
-    
+void encode(char *input, uint8_t *output) {
+    uint8_t encodeIndex, index, value, valueSize;
+    encodeIndex = 0;
+
     while (*input) {
-        uint8_t index = *input - 0x41;
-        
-        uint8_t value = codeLookup[index];
-        uint8_t valueSize = codeSizes[index];
+        index = *input - 0x41;
+
+        value = codeLookup[index];
+        valueSize = codeSizes[index];
 
         *output |= value >> encodeIndex;
+        encodeIndex += valueSize;
 
-        if (encodeIndex + valueSize < 8) {
-            encodeIndex += valueSize;
-        } else {
+        if (encodeIndex >= 8) {
+            encodeIndex -= 8;
             output += 1;
-            outputLength += 1;
-
-            uint8_t leftoverSize = max(encodeIndex + valueSize - 8, 0);
-            *output |= value << (valueSize - leftoverSize);
-
-            encodeIndex = leftoverSize;
+            *output |= value << (valueSize - encodeIndex);
         }
 
         input += 1;
     }
-
-    return outputLength;
 }
 
 // Assumes a valid encoded string
 // Assumes buffer holds enough room for output
-void decode(uint8_t *input, char *output) {
-    while (*input) {
-        // TODO get the index from input and next input
-        // get the character from the loopup table
-        // shift by correct amount based on length
+void decode(uint8_t *input, int outputLength, char *output) {
+    uint8_t index, decodeIndex, letterIndex, valueSize;
+    char value;
 
-        input += 1;
+    index = input[0];
+    decodeIndex = 0;
+
+    for (int i = 0; i < outputLength; i++) {
+        value = characterLookup[index];
+        letterIndex = value - 0x41;
+        valueSize = codeSizes[letterIndex];
+
+        output[i] = value;
+        decodeIndex += valueSize;
+
+        if (decodeIndex >= 8) {
+            decodeIndex -= 8;
+            input += 1;
+        }
+
+        index = (*input << decodeIndex) | (*(input + 1) >> (8 - decodeIndex));
     }
 
-    *output = '\0';
+    output[outputLength] = '\0';
 }
