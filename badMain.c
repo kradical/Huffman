@@ -26,14 +26,14 @@ char *lookupTable[SIZE] = {
 
 int codeSizes[SIZE] = { 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5 };
 
-// 0 left, 1 right
+// 0 left, 1 right, z is indicator character.
 char lookupTree[63] = { 
-    -1, 
-    -1, -1, 
-    -1, -1, -1, -1,
-    'C', -1, 'B', -1, -1, -1, -1,  'A',
-    -1,  -1, 'H', -1, -1, -1, 'J', 'G', 'F', -1, 'E', 'I', -1, 'D', -1, -1,
-    -1,  -1,  -1, -1, -1, -1, 'L',  'O',  -1, -1,  -1,  -1, -1,  -1, -1, -1, -1, -1, 'P', 'M', -1, -1, -1, -1, 'N', 'K', -1, -1, -1, -1, -1, -1,
+    'z',
+    'z', 'z', 
+    'z', 'z', 'z', 'z',
+    'C', 'z', 'B', 'z', 'z', 'z', 'z', 'A',
+    'z', 'z', 'H', 'z', 'z', 'z', 'J', 'G', 'F', 'z', 'E', 'I', 'z', 'D', 'z', 'z',
+    'z', 'z', 'z', 'z', 'z', 'z', 'L', 'O', 'z', 'z', 'z', 'z', 'z', 'z', 'z', 'z', 'z', 'z', 'P', 'M', 'z', 'z', 'z', 'z', 'N', 'K', 'z', 'z', 'z', 'z', 'z', 'z',
 };
 
 void encode(char*, char*);
@@ -71,7 +71,7 @@ void decode(char *input, char *output) {
         int index = 0;
         char next = lookupTree[index];
         
-        while (next == -1) {
+        while (next == 'z') {
             if (*input++ == '1') {
                 index = index * 2 + 2;
                 next = lookupTree[index];
