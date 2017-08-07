@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <string.h>
 #include <stdint.h>
 
@@ -34,43 +33,17 @@ char characterLookup[255] = {
 void encode(char*, uint8_t*);
 void decode(uint8_t*, int, char*);
 
-// Utility to print result of encoding.
-// Assumes little endian.
-void printBits(size_t size, void *ptr) {
-    unsigned char *b = (unsigned char*) ptr;
-    unsigned char byte;
-    int i, j;
-
-    for (i = size - 1; i >= 0; i--) {
-        for (j = 7; j >= 0; j--) {
-            byte = (b[i] >> j) & 1;
-            printf("%u", byte);
-        }
-    }
-}
-
 int main(void) {
-    char *initial = "POAJBCDFEALIJKEEIK";
-    int initialLength = strlen(initial);
+    char *initial = "A";
+    int initialLength = 1;
     
     uint8_t encoded[initialLength]; // guarenteed to have enough room.
     memset(encoded, 0, initialLength);
     
     char decoded[initialLength + 1];
 
-    printf("original:\n%s\n\n", initial);
-
     encode(initial, encoded);
-
-    printf("encoded (with padding):\n");
-    for (int i = 0; i < initialLength; i++) {
-        printBits(sizeof(uint8_t), &encoded[i]);
-    }
-    printf("\n\n");
-
     decode(encoded, initialLength, decoded);
-
-    printf("decoded:\n%s\n\n", decoded);
 
     return 0;
 }
@@ -78,7 +51,7 @@ int main(void) {
 // Assumes string contains characters in the range of alphabet
 // Assumes buffer holds enough room for output
 void encode(char *input, uint8_t *output) {
-    uint8_t encodeIndex, index, value, valueSize;
+    register uint8_t encodeIndex, index, value, valueSize;
     encodeIndex = 0;
 
     while (*input) {
@@ -103,8 +76,8 @@ void encode(char *input, uint8_t *output) {
 // Assumes a valid encoded string
 // Assumes buffer holds enough room for output
 void decode(uint8_t *input, int outputLength, char *output) {
-    uint8_t index, decodeIndex, letterIndex, valueSize;
-    char value;
+    register uint8_t index, decodeIndex, letterIndex, valueSize;
+    register char value;
 
     index = input[0];
     decodeIndex = 0;
