@@ -78,11 +78,12 @@ void encode(char *input, uint8_t *output) {
 void decode(uint8_t *input, int outputLength, char *output) {
     register uint8_t index, decodeIndex, letterIndex, valueSize;
     register char value;
+    register int i;
 
     index = input[0];
     decodeIndex = 0;
 
-    for (int i = 0; i < outputLength; i++) {
+    for (i = 0; i < outputLength; i++) {
         value = characterLookup[index];
         letterIndex = value - 0x41;
         valueSize = codeSizes[letterIndex];
