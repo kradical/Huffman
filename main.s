@@ -332,7 +332,7 @@ characterLookup:
 	.section	.rodata
 	.align	2
 .LC0:
-	.ascii	"POAJBCDFEALIJKEEIK\000"
+	.ascii	"A\000"
 	.text
 	.align	2
 	.global	main
@@ -348,9 +348,7 @@ main:
 	mov	r5, r3
 	ldr	r3, .L3
 	str	r3, [fp, #-20]
-	ldr	r0, [fp, #-20]
-	bl	strlen
-	mov	r3, r0
+	mov	r3, #1
 	str	r3, [fp, #-16]
 	ldr	r0, [fp, #-16]
 	mov	r3, r0
@@ -513,62 +511,64 @@ main:
 	.type	encode, %function
 encode:
 	@ Function supports interworking.
-	@ args = 0, pretend = 0, frame = 16
+	@ args = 0, pretend = 0, frame = 24
 	@ frame_needed = 1, uses_anonymous_args = 0
 	@ link register save eliminated.
 	str	fp, [sp, #-4]!
 	add	fp, sp, #0
-	sub	sp, sp, #20
-	str	r0, [fp, #-16]
-	str	r1, [fp, #-20]
-	mov	r3, #0
-	strb	r3, [fp, #-8]
+	sub	sp, sp, #28
+	str	r0, [fp, #-8]
+	str	r1, [fp, #-12]
+	mov	r1, #0
+	str	r1, [fp, #-24]
 	b	.L6
 .L8:
-	ldr	r3, [fp, #-16]
+	ldr	r3, [fp, #-8]
 	ldrb	r3, [r3, #0]	@ zero_extendqisi2
 	sub	r3, r3, #65
-	strb	r3, [fp, #-7]
-	ldrb	r2, [fp, #-7]	@ zero_extendqisi2
+	and	r1, r3, #255
+	mov	r2, r1
 	ldr	r3, .L10
-	ldrb	r3, [r3, r2]
-	strb	r3, [fp, #-6]
-	ldrb	r2, [fp, #-7]	@ zero_extendqisi2
+	ldrb	r3, [r3, r2]	@ zero_extendqisi2
+	str	r3, [fp, #-20]
+	mov	r2, r1
 	ldr	r3, .L10+4
-	ldrb	r3, [r3, r2]
-	strb	r3, [fp, #-5]
-	ldr	r3, [fp, #-20]
+	ldrb	r3, [r3, r2]	@ zero_extendqisi2
+	str	r3, [fp, #-16]
+	ldr	r3, [fp, #-12]
 	ldrb	r3, [r3, #0]	@ zero_extendqisi2
 	mov	r1, r3
-	ldrb	r2, [fp, #-6]	@ zero_extendqisi2
-	ldrb	r3, [fp, #-8]	@ zero_extendqisi2
+	ldr	r2, [fp, #-20]
+	ldr	r3, [fp, #-24]
 	mov	r3, r2, asr r3
 	and	r3, r3, #255
 	mov	r2, r1
 	orr	r3, r2, r3
 	and	r3, r3, #255
 	and	r3, r3, #255
-	ldr	r2, [fp, #-20]
+	ldr	r2, [fp, #-12]
 	strb	r3, [r2, #0]
-	ldrb	r2, [fp, #-8]
-	ldrb	r3, [fp, #-5]
-	add	r3, r2, r3
-	strb	r3, [fp, #-8]
-	ldrb	r3, [fp, #-8]	@ zero_extendqisi2
-	cmp	r3, #7
+	ldr	r2, [fp, #-24]
+	ldr	r1, [fp, #-16]
+	add	r3, r2, r1
+	and	r3, r3, #255
+	str	r3, [fp, #-24]
+	ldr	r2, [fp, #-24]
+	cmp	r2, #7
 	bls	.L7
-	ldrb	r3, [fp, #-8]
-	sub	r3, r3, #8
-	strb	r3, [fp, #-8]
-	ldr	r3, [fp, #-20]
+	ldr	r1, [fp, #-24]
+	sub	r3, r1, #8
+	and	r3, r3, #255
+	str	r3, [fp, #-24]
+	ldr	r3, [fp, #-12]
 	add	r3, r3, #1
-	str	r3, [fp, #-20]
-	ldr	r3, [fp, #-20]
+	str	r3, [fp, #-12]
+	ldr	r3, [fp, #-12]
 	ldrb	r3, [r3, #0]	@ zero_extendqisi2
 	mov	r0, r3
-	ldrb	r1, [fp, #-6]	@ zero_extendqisi2
-	ldrb	r2, [fp, #-5]	@ zero_extendqisi2
-	ldrb	r3, [fp, #-8]	@ zero_extendqisi2
+	ldr	r1, [fp, #-20]
+	ldr	r2, [fp, #-16]
+	ldr	r3, [fp, #-24]
 	rsb	r3, r3, r2
 	mov	r3, r1, asl r3
 	and	r3, r3, #255
@@ -576,14 +576,14 @@ encode:
 	orr	r3, r2, r3
 	and	r3, r3, #255
 	and	r3, r3, #255
-	ldr	r2, [fp, #-20]
+	ldr	r2, [fp, #-12]
 	strb	r3, [r2, #0]
 .L7:
-	ldr	r3, [fp, #-16]
+	ldr	r3, [fp, #-8]
 	add	r3, r3, #1
-	str	r3, [fp, #-16]
+	str	r3, [fp, #-8]
 .L6:
-	ldr	r3, [fp, #-16]
+	ldr	r3, [fp, #-8]
 	ldrb	r3, [r3, #0]	@ zero_extendqisi2
 	cmp	r3, #0
 	bne	.L8
@@ -601,82 +601,81 @@ encode:
 	.type	decode, %function
 decode:
 	@ Function supports interworking.
-	@ args = 0, pretend = 0, frame = 32
+	@ args = 0, pretend = 0, frame = 24
 	@ frame_needed = 1, uses_anonymous_args = 0
 	@ link register save eliminated.
 	str	fp, [sp, #-4]!
 	add	fp, sp, #0
-	sub	sp, sp, #36
-	str	r0, [fp, #-24]
-	str	r1, [fp, #-28]
-	str	r2, [fp, #-32]
-	ldr	r3, [fp, #-24]
-	ldrb	r3, [r3, #0]
-	strb	r3, [fp, #-13]
+	sub	sp, sp, #28
+	str	r0, [fp, #-8]
+	str	r1, [fp, #-12]
+	str	r2, [fp, #-16]
+	ldr	r3, [fp, #-8]
+	ldrb	r3, [r3, #0]	@ zero_extendqisi2
+	str	r3, [fp, #-28]
+	mov	r2, #0
+	str	r2, [fp, #-24]
 	mov	r3, #0
-	strb	r3, [fp, #-12]
-	mov	r3, #0
-	str	r3, [fp, #-8]
+	str	r3, [fp, #-20]
 	b	.L13
 .L15:
-	ldrb	r2, [fp, #-13]	@ zero_extendqisi2
+	ldr	r2, [fp, #-28]
 	ldr	r3, .L17
-	ldrb	r3, [r3, r2]
-	strb	r3, [fp, #-9]
-	ldrb	r3, [fp, #-9]
-	sub	r3, r3, #65
-	strb	r3, [fp, #-11]
-	ldrb	r2, [fp, #-11]	@ zero_extendqisi2
+	ldrb	r1, [r3, r2]	@ zero_extendqisi2
+	sub	r3, r1, #65
+	and	r3, r3, #255
+	mov	r2, r3
 	ldr	r3, .L17+4
-	ldrb	r3, [r3, r2]
-	strb	r3, [fp, #-10]
-	ldr	r2, [fp, #-8]
-	ldr	r3, [fp, #-32]
+	ldrb	r0, [r3, r2]	@ zero_extendqisi2
+	ldr	r2, [fp, #-20]
+	ldr	r3, [fp, #-16]
 	add	r2, r3, r2
-	ldrb	r3, [fp, #-9]
+	mov	r3, r1
 	strb	r3, [r2, #0]
-	ldrb	r2, [fp, #-12]
-	ldrb	r3, [fp, #-10]
-	add	r3, r2, r3
-	strb	r3, [fp, #-12]
-	ldrb	r3, [fp, #-12]	@ zero_extendqisi2
+	ldr	r2, [fp, #-24]
+	add	r3, r2, r0
+	and	r3, r3, #255
+	str	r3, [fp, #-24]
+	ldr	r3, [fp, #-24]
 	cmp	r3, #7
 	bls	.L14
-	ldrb	r3, [fp, #-12]
-	sub	r3, r3, #8
-	strb	r3, [fp, #-12]
-	ldr	r3, [fp, #-24]
-	add	r3, r3, #1
+	ldr	r2, [fp, #-24]
+	sub	r3, r2, #8
+	and	r3, r3, #255
 	str	r3, [fp, #-24]
+	ldr	r3, [fp, #-8]
+	add	r3, r3, #1
+	str	r3, [fp, #-8]
 .L14:
-	ldr	r3, [fp, #-24]
+	ldr	r3, [fp, #-8]
 	ldrb	r3, [r3, #0]	@ zero_extendqisi2
 	mov	r2, r3
-	ldrb	r3, [fp, #-12]	@ zero_extendqisi2
+	ldr	r3, [fp, #-24]
 	mov	r3, r2, asl r3
 	and	r1, r3, #255
-	ldr	r3, [fp, #-24]
+	ldr	r3, [fp, #-8]
 	add	r3, r3, #1
 	ldrb	r3, [r3, #0]	@ zero_extendqisi2
 	mov	r2, r3
-	ldrb	r3, [fp, #-12]	@ zero_extendqisi2
+	ldr	r3, [fp, #-24]
 	rsb	r3, r3, #8
 	mov	r3, r2, asr r3
 	and	r3, r3, #255
 	mov	r2, r1
 	orr	r3, r2, r3
 	and	r3, r3, #255
-	strb	r3, [fp, #-13]
-	ldr	r3, [fp, #-8]
+	and	r3, r3, #255
+	str	r3, [fp, #-28]
+	ldr	r3, [fp, #-20]
 	add	r3, r3, #1
-	str	r3, [fp, #-8]
+	str	r3, [fp, #-20]
 .L13:
-	ldr	r2, [fp, #-8]
-	ldr	r3, [fp, #-28]
+	ldr	r3, [fp, #-12]
+	ldr	r2, [fp, #-20]
 	cmp	r2, r3
 	blt	.L15
-	ldr	r2, [fp, #-28]
-	ldr	r3, [fp, #-32]
+	ldr	r2, [fp, #-12]
+	ldr	r3, [fp, #-16]
 	add	r2, r3, r2
 	mov	r3, #0
 	strb	r3, [r2, #0]
